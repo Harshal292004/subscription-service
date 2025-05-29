@@ -1,6 +1,10 @@
 package services
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"github.com/Harshal292004/subscription-service/internal/models"
 	"github.com/Harshal292004/subscription-service/internal/repository"
 )
@@ -29,5 +33,22 @@ func (s *SubscriptionService) PutSubscription(userId int, newPlanId int) (models
 	return s.repo.PutSubscription(userId, newPlanId)
 }
 
-func (s *SubscriptionService) CheckAndExpireSubscriptions() {
+func (s *SubscriptionService) CheckExpiredSubscriptions() error {
+	now := time.Now()
+	var expiredSubs []models.Subscription
+
+	err := s.repo.DB.
+		Where("end_date <= ? AND status = ?", now, models.Active).
+		Find(&expiredSubs).Error
+	if err != nil {
+		return err
+	}
+
+	for _, sub := range expiredSubs {
+		sub.Status = models.Expired
+		s.repo.DB.Save(&sub)
+		s.repo.Redis.Del(context.Background(), fmt.Sprintf("%d:sub", sub.UserID))
+	}
+
+	return nil
 }

@@ -87,7 +87,7 @@ func registerRoutes(app *fiber.App, repo *repository.Repository) {
 
 	handlers.RegisterUserRoutes(api.Group("/user"), userService)
 	handlers.RegisterPlanRoutes(api.Group("/plans"), planService)
-	handlers.RegisterSubscriptionsServicesRoutes(api.Group("/subs"), subService)
+	handlers.RegisterSubscriptionRoutes(api.Group("/subs"), subService)
 }
 func gracefulShutdown(app *fiber.App, cancel context.CancelFunc, db *gorm.DB) {
 	quit := make(chan os.Signal, 1)

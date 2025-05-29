@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/Harshal292004/subscription-service/internal/services"
-	"github.com/Harshal292004/subscription-service/internal/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -10,25 +9,26 @@ type PlanHandler struct {
 	service *services.PlanService
 }
 
+// RegisterPlanRoutes godoc
+// @Summary     Get all available plans
+// @Tags        plans
 func RegisterPlanRoutes(r fiber.Router, service *services.PlanService) {
 	h := &PlanHandler{service}
-	r.Post("/register", h.GetAllPlans)
+	r.Get("/plans", h.GetAllPlans)
 }
 
+// GetAllPlans godoc
+// @Summary     Retrieve all plans
+// @Tags        plans
+// @Accept      json
+// @Produce     json
+// @Success     200 {array} models.Plan
+// @Failure     500 {object} map[string]string
+// @Router      /plans [get]
 func (h *PlanHandler) GetAllPlans(c *fiber.Ctx) error {
-	var input RegisterInput
-	if err := c.BodyParser(&input); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid input"})
-	}
-
-	if err := utils.ValidateStruct(input); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	token, err := h.service.GetAllPlans()
+	plans, err := h.service.GetAllPlans()
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
-
-	return c.JSON(fiber.Map{"token": token})
+	return c.JSON(fiber.Map{"data": plans})
 }

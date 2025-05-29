@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/Harshal292004/subscription-service/internal/services"
@@ -74,16 +75,19 @@ func InitRedis() *redis.Client {
 	}
 	return NewRedisConnection(&configuration)
 }
+
 func StartCronJobs(ctx context.Context, subService *services.SubscriptionService) {
 	c := cron.New()
-
-	c.AddFunc("@daily", func() {
-		subService.CheckAndExpireSubscriptions()
+	err := c.AddFunc("@every 1h", func() {
+		log.Println("Running CheckExpiredSubscriptions job")
+		if err := subService.CheckExpiredSubscriptions(); err != nil {
+			log.Printf("Error running CheckExpiredSubscriptions: %v", err)
+		}
 	})
-
+	if err != nil {
+		log.Fatalf("Failed to schedule cron: %v", err)
+	}
 	c.Start()
-
-	// Wait for shutdown signal
 	go func() {
 		<-ctx.Done()
 		logrus.Info("Stopping cron jobs...")
