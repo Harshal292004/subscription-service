@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/Harshal292004/subscription-service/internal/models"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -159,10 +162,74 @@ func (r *Repository) DeleteSubscription(userId uint) (models.Subscription, error
 	return sub, nil
 }
 
-func (r *Repository) PutSubscription(userId uint, planId uint) (models.Subscription, error) {
+func (r *Repository) PutSubscription(userId int, newPlanId int) (models.Subscription, error) {
+	ctx := context.Background()
+	key := fmt.Sprintf("%s:sub", fmt.Sprint(userId))
 
+	// Check for existing subscription
+	var sub models.Subscription
+	if err := r.DB.WithContext(ctx).Where("user_id = ?", userId).First(&sub).Error; err != nil {
+		return models.Subscription{}, err
+	}
+
+	// Fetch new plan
+	var newPlan models.Plan
+	if err := r.DB.WithContext(ctx).First(&newPlan, newPlanId).Error; err != nil {
+		return models.Subscription{}, err
+	}
+
+	now := time.Now()
+	sub.PlanID = uint(newPlanId)
+	sub.Status = models.Active
+	sub.StartDate = now
+	sub.EndDate = now.AddDate(0, 0, newPlan.Duration)
+
+	if err := r.DB.WithContext(ctx).Save(&sub).Error; err != nil {
+		return models.Subscription{}, err
+	}
+
+	data, err := json.Marshal(sub)
+	if err == nil {
+		ttl := time.Until(sub.EndDate)
+		if ttl <= 0 {
+			ttl = time.Hour
+		}
+		r.Redis.Set(ctx, key, data, ttl)
+	}
+
+	return sub, nil
 }
 
-func (r *Repository) PostUser() {
+func (r *Repository) PostUser(name string, password string) (string, error) {
+	ctx := context.Background()
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	var jwt_secret = os.Getenv("JWT_SECRET")
 
+	user := models.User{
+		Name:     name,
+		Password: string(hashedPassword),
+	}
+
+	if err := r.DB.WithContext(ctx).Create(&user).Error; err != nil {
+		return "", err
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+	})
+	signedToken, err := token.SignedString(jwt_secret)
+	if err != nil {
+		return "", err
+	}
+
+	sessionKey := fmt.Sprintf("user:%d:session", user.ID)
+	if err := r.Redis.Set(ctx, sessionKey, signedToken, 24*time.Hour).Err(); err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
 }
