@@ -15,7 +15,7 @@ type Subscription struct {
 	ID        uint               `gorm:"primaryKey" json:"id"`
 	UserID    uint               `gorm:"not null;unique" json:"user_id"`
 	PlanID    uint               `gorm:"not null" json:"plan_id"`
-	Status    SubscriptionStatus `gorm:"type:varchar(20);not null" json:"status"`
+	Status    SubscriptionStatus `gorm:"type:subscription_status;not null"`
 	StartDate time.Time          `gorm:"not null" json:"start_date"`
 	EndDate   time.Time          `gorm:"not null" json:"end_date"`
 	CreatedAt time.Time          `json:"created_at"`

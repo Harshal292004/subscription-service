@@ -6,5 +6,9 @@ import (
 )
 
 func CORS() fiber.Handler {
-	return cors.New()
+	return cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "GET,POST,PUT,DELETE",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	})
 }

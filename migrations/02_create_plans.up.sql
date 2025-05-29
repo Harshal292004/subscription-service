@@ -2,7 +2,7 @@ CREATE TABLE plans(
     id SERIAL PRIMARY KEY ,
     name VARCHAR(255) NOT NULL,
     price DOUBLE PRECISION NOT NULL,
-    features TEXT[] NOT NULL,
+    features JSONB NOT NULL
     duration_days INTEGER NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()

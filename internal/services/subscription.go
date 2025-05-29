@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/Harshal292004/subscription-service/internal/models"
@@ -46,7 +47,10 @@ func (s *SubscriptionService) CheckExpiredSubscriptions() error {
 
 	for _, sub := range expiredSubs {
 		sub.Status = models.Expired
-		s.repo.DB.Save(&sub)
+		if err := s.repo.DB.Save(&sub).Error; err != nil {
+			log.Fatal(err)
+			continue
+		}
 		s.repo.Redis.Del(context.Background(), fmt.Sprintf("%d:sub", sub.UserID))
 	}
 
