@@ -62,11 +62,9 @@ func main() {
 	// Route registration
 	registerRoutes(app, repo)
 
-	go func() {
-		if err := app.Listen(":8080"); err != nil {
-			logrus.WithError(err).Fatal("Fiber app failed")
-		}
-	}()
+	if err := app.Listen(":3000"); err != nil {
+		logrus.WithError(err).Fatal("Fiber app failed")
+	}
 
 	// Start Cron Job
 	ctx, cancel := context.WithCancel(context.Background())

@@ -9,6 +9,12 @@ services:
       - "5431:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:  # Add health check for early stopping
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
 
   redis:
     image: redis:7-alpine
@@ -17,19 +23,31 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - rd_data:/data
+    healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 2s
+        timeout: 3s
+        retries: 5
 
   migration:
     image: migrate/migrate
     volumes:
       - ./migrations:/migrations
-    command:
+    command: 
       - "-path"
       - "/migrations"
       - "-database"
       - "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
       - "up"
     depends_on:
-      - postgres
+      postgres:  
+        condition: service_healthy
+    healthcheck:  # Add health check
+      test: ["CMD", "echo", "Migrations completed"]
+      interval: 5s
+      timeout: 1s
+      retries: 0
+      start_period: 10s
 
   app:
     build:
@@ -49,9 +67,13 @@ services:
       - REDIS_DB=0
       - REDIS_PROTOCOL=2
       - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - postgres
-      - redis
+    depends_on: 
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      migration:
+        condition: service_completed_successfully
 
       
 volumes:

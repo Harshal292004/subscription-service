@@ -1,7 +1,7 @@
 CREATE TABLE users(
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    password VARCHAR(100) NOT NUll,
+    password VARCHAR(100) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
