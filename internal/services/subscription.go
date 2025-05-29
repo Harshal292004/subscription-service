@@ -28,3 +28,6 @@ func (s *SubscriptionService) DeleteSubscription(userId int) (models.Subscriptio
 func (s *SubscriptionService) PutSubscription(userId int, newPlanId int) (models.Subscription, error) {
 	return s.repo.PutSubscription(userId, newPlanId)
 }
+
+func (s *SubscriptionService) CheckAndExpireSubscriptions() {
+}

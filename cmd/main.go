@@ -39,7 +39,8 @@ func main() {
 
 	handlers.RegisterUserRoutes(api.Group("/user"), userService)
 	handlers.RegisterPlanRoutes(api.Group("/plans"), planService)
-	handlers.RegisterSubscriptionRoutes(api.Group("/subs"), subService)
+	handlers.RegisterSubscriptionsServicesRoutes(api.Group("/subs"), subService)
 
+	go config.StartCronJobs(subService)
 	log.Fatal(app.Listen(":8080"))
 }

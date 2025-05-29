@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Harshal292004/subscription-service/internal/services"
 	"github.com/redis/go-redis/v9"
+	"github.com/robfig/cron"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -69,4 +71,14 @@ func InitRedis() *redis.Client {
 		Protocol: 1,
 	}
 	return NewRedisConnection(&configuration)
+}
+
+func StartCronJobs(subService *services.SubscriptionService) {
+	c := cron.New()
+
+	c.AddFunc("@daily", func() {
+		subService.CheckAndExpireSubscriptions()
+	})
+
+	c.Start()
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/Harshal292004/subscription-service/internal/middleware"
 	"github.com/Harshal292004/subscription-service/internal/services"
 	"github.com/Harshal292004/subscription-service/internal/utils"
 	"github.com/gofiber/fiber/v2"
@@ -10,8 +11,9 @@ type SubscriptionHandler struct {
 	service *services.SubscriptionService
 }
 
-func RegisterServicesRoutes(r fiber.Router, service *services.SubscriptionService) {
+func RegisterSubscriptionsServicesRoutes(r fiber.Router, service *services.SubscriptionService) {
 	h := &SubscriptionHandler{service}
+	r.Use(middleware.AuthMiddleware())
 	r.Get("/subscription", h.GetSubscription)
 	r.Post("/subscription/:userId", h.PostSubscription)
 	r.Delete("/subscription/:userId", h.DeleteSubscription)

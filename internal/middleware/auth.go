@@ -3,12 +3,11 @@ package middleware
 import (
 	"strings"
 
-	"github.com/Harshal292004/subscription-service/internal/repository"
 	"github.com/Harshal292004/subscription-service/internal/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
-func AuthMiddleware(repo *repository.Repository) fiber.Handler {
+func AuthMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
