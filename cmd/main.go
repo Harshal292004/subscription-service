@@ -2,29 +2,35 @@ package main
 
 import (
 	"log"
+	"os"
 
-	"github.com/Harshal292004/subscription-service/config"
-
+	"github.com/Harshal292004/subscription-service/internal/config"
+	"github.com/Harshal292004/subscription-service/internal/repository"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 )
-
-type Repository struct {
-	DB *gorm.DB
-}
 
 func main() {
 	err := godotenv.Load(".env")
-	&config.NewConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
-	r := Repository{
-		DB: db,
+	configuration := config.Config{
+		Host:     os.Getenv("POSTGRES_HOST"),
+		Port:     os.Getenv("POSTGRES_PORT"),
+		Password: os.Getenv("POSTGRES_PASSWORD"),
+		User:     os.Getenv("POSTGRES_USER"),
+		DBName:   os.Getenv("POSTGRES_DB"),
+		SSLMode:  os.Getenv("POSTGRES_SSLMODE"),
 	}
+	db, err := config.NewConection(&configuration)
+	if err != nil {
+		log.Fatal(err)
+	}
+	r := repository.Repository{}
+
 	app := fiber.New()
-	r.SetupRoutes(app)
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello")
 	})

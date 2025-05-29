@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -16,6 +17,13 @@ type Config struct {
 	SSLMode  string
 }
 
+type RedisConfig struct {
+	Addr     string
+	Password string
+	DB       int
+	Protocol int
+}
+
 func NewConection(config *Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
@@ -26,4 +34,16 @@ func NewConection(config *Config) (*gorm.DB, error) {
 		return db, err
 	}
 	return db, nil
+}
+
+func NewRedisConnection(config *RedisConfig) *redis.Client {
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     config.Addr,
+		Password: config.Password,
+		DB:       config.DB,
+		Protocol: config.Protocol,
+	})
+
+	return client
 }
