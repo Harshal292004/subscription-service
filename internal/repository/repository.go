@@ -134,7 +134,7 @@ func (r *Repository) PostSubscription(userId int, planId int) (models.Subscripti
 	return sub, nil
 }
 
-func (r *Repository) DeleteSubscription(userId uint) (models.Subscription, error) {
+func (r *Repository) DeleteSubscription(userId int) (models.Subscription, error) {
 	ctx := context.Background()
 	key := fmt.Sprintf("%s:sub", fmt.Sprint(userId))
 

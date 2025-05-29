@@ -2,38 +2,44 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/Harshal292004/subscription-service/internal/config"
+	"github.com/Harshal292004/subscription-service/internal/handlers"
+	"github.com/Harshal292004/subscription-service/internal/middleware"
 	"github.com/Harshal292004/subscription-service/internal/repository"
+	"github.com/Harshal292004/subscription-service/internal/services"
 	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal(err)
-	}
-	configuration := config.Config{
-		Host:     os.Getenv("POSTGRES_HOST"),
-		Port:     os.Getenv("POSTGRES_PORT"),
-		Password: os.Getenv("POSTGRES_PASSWORD"),
-		User:     os.Getenv("POSTGRES_USER"),
-		DBName:   os.Getenv("POSTGRES_DB"),
-		SSLMode:  os.Getenv("POSTGRES_SSLMODE"),
-	}
-	db, err := config.NewConection(&configuration)
-	if err != nil {
-		log.Fatal(err)
-	}
-	r := repository.Repository{}
-
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello")
-	})
+	// Logger middleware
+	app.Use(middleware.Logger())
 
-	app.Listen(":3000")
+	// CORS
+	app.Use(middleware.CORS())
+
+	// Init DB, Redis
+	db, err := config.InitPostgres()
+	redis := config.InitRedis()
+	if err != nil {
+		panic("Error occured")
+	}
+	// Repos
+	repo := repository.NewRepository(db, redis)
+
+	// Services
+	userService := services.NewUserService(repo)
+	planService := services.NewPlanService(repo)
+	subService := services.NewSubscriptionService(repo)
+
+	// Routes
+	api := app.Group("/api")
+
+	handlers.RegisterUserRoutes(api.Group("/user"), userService)
+	handlers.RegisterPlanRoutes(api.Group("/plans"), planService)
+	handlers.RegisterSubscriptionRoutes(api.Group("/subs"), subService)
+
+	log.Fatal(app.Listen(":8080"))
 }

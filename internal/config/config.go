@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
@@ -46,4 +47,26 @@ func NewRedisConnection(config *RedisConfig) *redis.Client {
 	})
 
 	return client
+}
+
+func InitPostgres() (*gorm.DB, error) {
+	configuration := Config{
+		Host:     os.Getenv("POSTGRES_HOST"),
+		Port:     os.Getenv("POSTGRES_PORT"),
+		Password: os.Getenv("POSTGRES_PASSWORD"),
+		User:     os.Getenv("POSTGRES_USER"),
+		DBName:   os.Getenv("POSTGRES_DB"),
+		SSLMode:  os.Getenv("POSTGRES_SSLMODE"),
+	}
+	return NewConection(&configuration)
+}
+
+func InitRedis() *redis.Client {
+	configuration := RedisConfig{
+		Addr:     os.Getenv("ADDR"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+		Protocol: 1,
+	}
+	return NewRedisConnection(&configuration)
 }
