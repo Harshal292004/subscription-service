@@ -1,12 +1,14 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/Harshal292004/subscription-service/internal/services"
 	"github.com/redis/go-redis/v9"
 	"github.com/robfig/cron"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -72,8 +74,7 @@ func InitRedis() *redis.Client {
 	}
 	return NewRedisConnection(&configuration)
 }
-
-func StartCronJobs(subService *services.SubscriptionService) {
+func StartCronJobs(ctx context.Context, subService *services.SubscriptionService) {
 	c := cron.New()
 
 	c.AddFunc("@daily", func() {
@@ -81,4 +82,11 @@ func StartCronJobs(subService *services.SubscriptionService) {
 	})
 
 	c.Start()
+
+	// Wait for shutdown signal
+	go func() {
+		<-ctx.Done()
+		logrus.Info("Stopping cron jobs...")
+		c.Stop()
+	}()
 }
