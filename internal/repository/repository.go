@@ -226,9 +226,10 @@ func (r *Repository) PostSubscription(userId int, planId int) (models.Subscripti
 		log.Println("[PostSubscription] === Returning error ===")
 		return models.Subscription{}, err
 	}
-
+	log.Printf("[PostSubscription] The plan is %v", plan)
 	// Create subscription
 	now := time.Now()
+	log.Printf("[PostSubscription] The plan duration is %v", plan.Duration)
 	end := now.AddDate(0, 0, plan.Duration)
 	log.Printf("[PostSubscription] Creating subscription: Start=%v, End=%v", now, end)
 
@@ -263,6 +264,10 @@ func (r *Repository) PostSubscription(userId int, planId int) (models.Subscripti
 	data, marshalErr := json.Marshal(sub)
 	if marshalErr == nil {
 		ttl := time.Until(end)
+		if ttl <= 0 {
+			ttl = time.Hour
+			log.Printf("[PostSubscription] Subscription expired, using default TTL of 1 hour")
+		}
 		log.Printf("[PostSubscription] Caching new subscription with TTL: %v", ttl)
 
 		cacheErr := retry.Do(func() error {
@@ -449,6 +454,10 @@ func (r *Repository) PutSubscription(userId int, newPlanId int) (models.Subscrip
 	data, marshalErr := json.Marshal(sub)
 	if marshalErr == nil {
 		ttl := time.Until(sub.EndDate)
+		if ttl <= 0 {
+			ttl = time.Hour
+			log.Printf("[PostSubscription] Subscription expired, using default TTL of 1 hour")
+		}
 		log.Printf("[PutSubscription] Updating cache with new subscription data, TTL: %v", ttl)
 
 		cacheErr := retry.Do(func() error {

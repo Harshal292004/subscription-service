@@ -21,6 +21,12 @@ type PlanIdInput struct {
 	PlanId int `json:"planId"`
 }
 
+func NewSubscriptionHandler(s *services.SubscriptionService) *SubscriptionHandler {
+	return &SubscriptionHandler{
+		service: s,
+	}
+}
+
 // RegisterSubscriptionRoutes godoc
 // @Summary     Manage user subscriptions
 // @Tags        subscriptions
@@ -46,10 +52,8 @@ func RegisterSubscriptionRoutes(r fiber.Router, service *services.SubscriptionSe
 // @Success     200 {object} models.Subscription
 // @Failure     400 {object} map[string]string
 // @Failure     500 {object} map[string]string
-// @Router      /subscription [get]
+// @Router      /api/subs/subscription [get]
 // @Security    BearerAuth
-
-// Updated subscription handlers with better type handling
 func (h *SubscriptionHandler) GetSubscription(c *fiber.Ctx) error {
 	log.Println("[GetSubscription] === Starting GetSubscription request ===")
 
@@ -98,7 +102,7 @@ func (h *SubscriptionHandler) GetSubscription(c *fiber.Ctx) error {
 // @Success     200 {object} models.Subscription
 // @Failure     400 {object} map[string]string
 // @Failure     500 {object} map[string]string
-// @Router      /subscription [post]
+// @Router		/api/subs/subscription [post]
 // @Security    BearerAuth
 func (h *SubscriptionHandler) PostSubscription(c *fiber.Ctx) error {
 	log.Println("[PostSubscription] === Starting PostSubscription request ===")
@@ -155,7 +159,7 @@ func (h *SubscriptionHandler) PostSubscription(c *fiber.Ctx) error {
 // @Success     200 {object} models.Subscription
 // @Failure     400 {object} map[string]string
 // @Failure     500 {object} map[string]string
-// @Router      /subscription [delete]
+// @Router      /api/subs/subscription [delete]
 // @Security    BearerAuth
 func (h *SubscriptionHandler) DeleteSubscription(c *fiber.Ctx) error {
 	log.Println("[DeleteSubscription] === Starting DeleteSubscription request ===")
@@ -193,7 +197,7 @@ func (h *SubscriptionHandler) DeleteSubscription(c *fiber.Ctx) error {
 // @Success     200 {object} models.Subscription
 // @Failure     400 {object} map[string]string
 // @Failure     500 {object} map[string]string
-// @Router      /subscription [put]
+// @Router      /api/subs/subscription [put]
 // @Security    BearerAuth
 func (h *SubscriptionHandler) PutSubscription(c *fiber.Ctx) error {
 	log.Println("[PutSubscription] === Starting PutSubscription request ===")

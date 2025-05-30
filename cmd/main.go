@@ -1,5 +1,11 @@
 package main
 
+// @title       Subscription Service API
+// @version     1.0
+// @description This is the API documentation for the subscription service.
+// @host        localhost:3000
+// @BasePath    /api
+// @schemes     http
 import (
 	"context"
 	"os"
@@ -61,15 +67,14 @@ func main() {
 
 	// Route registration
 	registerRoutes(app, repo)
-
 	if err := app.Listen(":3000"); err != nil {
 		logrus.WithError(err).Fatal("Fiber app failed")
 	}
 
 	// Start Cron Job
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go config.StartCronJobs(ctx, services.NewSubscriptionService(repo))
+	_, cancel := context.WithCancel(context.Background())
+	// defer cancel()
+	// go config.StartCronJobs(ctx, services.NewSubscriptionService(repo))
 
 	// Graceful shutdown
 	gracefulShutdown(app, cancel, db)

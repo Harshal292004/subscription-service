@@ -1,11 +1,6 @@
 package services
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"time"
-
 	"github.com/Harshal292004/subscription-service/internal/models"
 	"github.com/Harshal292004/subscription-service/internal/repository"
 )
@@ -34,25 +29,25 @@ func (s *SubscriptionService) PutSubscription(userId int, newPlanId int) (models
 	return s.repo.PutSubscription(userId, newPlanId)
 }
 
-func (s *SubscriptionService) CheckExpiredSubscriptions() error {
-	now := time.Now()
-	var expiredSubs []models.Subscription
+// func (s *SubscriptionService) CheckExpiredSubscriptions() error {
+// 	now := time.Now()
+// 	var expiredSubs []models.Subscription
 
-	err := s.repo.DB.
-		Where("end_date <= ? AND status = ?", now, models.Active).
-		Find(&expiredSubs).Error
-	if err != nil {
-		return err
-	}
+// 	err := s.repo.DB.
+// 		Where("end_date <= ? AND status = ?", now, models.Active).
+// 		Find(&expiredSubs).Error
+// 	if err != nil {
+// 		return err
+// 	}
 
-	for _, sub := range expiredSubs {
-		sub.Status = models.Expired
-		if err := s.repo.DB.Save(&sub).Error; err != nil {
-			log.Fatal(err)
-			continue
-		}
-		s.repo.Redis.Del(context.Background(), fmt.Sprintf("%d:sub", sub.UserID))
-	}
+// 	for _, sub := range expiredSubs {
+// 		sub.Status = models.Expired
+// 		if err := s.repo.DB.Save(&sub).Error; err != nil {
+// 			log.Fatal(err)
+// 			continue
+// 		}
+// 		s.repo.Redis.Del(context.Background(), fmt.Sprintf("%d:sub", sub.UserID))
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

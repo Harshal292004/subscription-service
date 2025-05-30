@@ -24,7 +24,7 @@ func RegisterPlanRoutes(r fiber.Router, service *services.PlanService) {
 // @Produce     json
 // @Success     200 {array} models.Plan
 // @Failure     500 {object} map[string]string
-// @Router      /plans [get]
+// @Router      /api/plans/plans [get]
 func (h *PlanHandler) GetAllPlans(c *fiber.Ctx) error {
 	plans, err := h.service.GetAllPlans()
 	if err != nil {

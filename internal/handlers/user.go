@@ -36,7 +36,7 @@ type RegisterInput struct {
 // @Success     200 {object} map[string]string "JWT token"
 // @Failure     400 {object} map[string]string
 // @Failure     500 {object} map[string]string
-// @Router      /register [post]
+// @Router      /api/user/register [post]
 func (h *UserHandler) Register(c *fiber.Ctx) error {
 	log.Println("[Register] === Starting user registration request ===")
 
